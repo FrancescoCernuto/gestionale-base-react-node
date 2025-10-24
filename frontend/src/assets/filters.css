@@ -1,0 +1,3 @@
+.filter-bar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; justify-content: flex-end; margin-bottom: 1rem; }
+.filter-bar input, .filter-bar select { min-width: 220px; }
+.filter-bar .btn { min-width: 160px; }

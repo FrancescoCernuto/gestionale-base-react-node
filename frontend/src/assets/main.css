@@ -1,0 +1,6 @@
+:root { --sidebar-width: 240px; }
+html, body, #root { height: 100%; }
+.sidebar { width: var(--sidebar-width); background: #fff; border-right: 1px solid #e5e7eb; }
+.sidebar .brand { font-weight: 700; font-size: 1.1rem; }
+.page-title { font-weight: 600; margin-bottom: 1rem; }
+.container-fluid-like { width: 100%; }
