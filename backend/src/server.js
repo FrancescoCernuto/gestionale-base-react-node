@@ -1,38 +1,30 @@
-/**
- * Server Express – API Gestionale Multi-Azienda
- * Gestisce le rotte REST con header x-company-id e storage in memoria.
- */
+import express from "express";
+import cors from "cors";
+import morgan from "morgan";
+import dotenv from "dotenv";
 
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const companyContext = require('./middleware/companyContext');
+import fattureRoutes from "./routes/fatture.js";
+import utenzeRoutes from "./routes/utenze.js";
+import fornitoriBeniRoutes from "./routes/fornitoriBeni.js";
+import fornitoriServiziRoutes from "./routes/fornitoriServizi.js";
+
+dotenv.config();
 
 const app = express();
-
-// Middleware base
 app.use(cors());
+app.use(morgan("dev"));
 app.use(express.json());
-app.use(morgan('dev'));
 
 // Healthcheck
-app.get('/api/health', (req, res) => {
-  res.json({ ok: true, ts: new Date().toISOString() });
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", time: new Date().toISOString() });
 });
 
-// Middleware per la gestione multi-azienda
-app.use('/api', companyContext);
-
-// Rotte CRUD
-app.use('/api/fatture', require('./routes/fatture'));
-
-// (in futuro) altre risorse
-// app.use('/api/utenze', require('./routes/utenze'));
-// app.use('/api/fornitori-beni', require('./routes/fornitoriBeni'));
-// app.use('/api/fornitori-servizi', require('./routes/fornitoriServizi'));
+// Rotte API
+app.use("/api/fatture", fattureRoutes);
+app.use("/api/utenze", utenzeRoutes);
+app.use("/api/fornitori-beni", fornitoriBeniRoutes);
+app.use("/api/fornitori-servizi", fornitoriServiziRoutes);
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`✅ API server running at http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅ Backend avviato su http://localhost:${PORT}`));
