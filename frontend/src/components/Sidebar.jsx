@@ -1,32 +1,85 @@
-import React from 'react'
-import { NavLink } from 'react-router-dom'
-import { useStore } from '../context/StoreContext.jsx'
+import { NavLink } from 'react-router-dom';
+import { useStore } from '../context/StoreContext';
 
 export default function Sidebar() {
-  const { company, setCompany, companies } = useStore()
-  return (
-    <aside className="sidebar d-flex flex-column p-3">
-      <div className="brand mb-3">Gestionale</div>
+  const { company, setCompany } = useStore();
 
-      <div className="mb-3">
-        <label className="form-label mb-1">Azienda</label>
-        <select className="form-select" value={company} onChange={(e)=>setCompany(e.target.value)}>
-          {companies.map(c => <option key={c} value={c}>{c}</option>)}
+  // Lista fissa delle aziende disponibili
+  const companies = [
+    { id: 'bar-fancellis', name: 'Bar Fancellis' },
+    { id: 'g-and-g', name: 'G & G' },
+    { id: 'terza-azienda', name: 'Terza Azienda' },
+  ];
+
+  // Se il contesto non ha ancora un'azienda, imposta la prima
+  if (!company) {
+    setCompany(companies[0]);
+    return null; // evita errore al primo render
+  }
+
+  return (
+    <div
+      className="d-flex flex-column p-3 border-end bg-white"
+      style={{ width: 260, minHeight: '100vh' }}
+    >
+      <h5 className="mb-3">Gestionale</h5>
+
+      {/* Selettore azienda */}
+      <div className="mb-4">
+        <label className="form-label">Azienda</label>
+        <select
+          className="form-select"
+          value={company.id}
+          onChange={(e) =>
+            setCompany(companies.find((c) => c.id === e.target.value))
+          }
+        >
+          {Array.isArray(companies) &&
+            companies.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
         </select>
       </div>
 
-      <nav className="nav nav-pills flex-column gap-1">
-        <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
-        <NavLink className="nav-link" to="/fatture">Fatture</NavLink>
-        <NavLink className="nav-link" to="/utenze">Utenze</NavLink>
-        <NavLink className="nav-link" to="/fornitori-beni">Fornitori Beni</NavLink>
-        <NavLink className="nav-link" to="/fornitori-servizi">Fornitori Servizi</NavLink>
-      </nav>
+      {/* Navigazione principale */}
+      <ul className="nav nav-pills flex-column gap-1">
+        <li className="nav-item">
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              'nav-link ' + (isActive ? 'active' : '')
+            }
+          >
+            Dashboard
+          </NavLink>
+        </li>
+        <li className="nav-item">
+          <NavLink
+            to="/fatture"
+            className={({ isActive }) =>
+              'nav-link ' + (isActive ? 'active' : '')
+            }
+          >
+            Fatture
+          </NavLink>
+        </li>
+        <li className="nav-item">
+          <NavLink
+            to="/utenze"
+            className={({ isActive }) =>
+              'nav-link ' + (isActive ? 'active' : '')
+            }
+          >
+            Utenze
+          </NavLink>
+        </li>
+      </ul>
 
-      <div className="mt-auto small text-secondary">
-        <hr/>
-        <div>© Gestionale</div>
+      <div className="mt-auto small text-muted">
+        Attiva: <strong>{company?.name}</strong>
       </div>
-    </aside>
-  )
+    </div>
+  );
 }

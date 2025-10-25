@@ -1,17 +1,20 @@
-import React, { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useState } from 'react';
 
-const StoreContext = createContext(null)
+const StoreContext = createContext();
 
 export function StoreProvider({ children }) {
-  const [company, setCompany] = useState('Bar Fancellis')
-  const companies = ['Bar Fancellis', 'G&G', 'Terza Azienda']
+  // default azienda (fissa per ora)
+  const [company, setCompany] = useState({ id: 'bar-fancellis', name: 'Bar Fancellis' });
 
-  const value = useMemo(()=> ({ company, setCompany, companies }), [company])
-  return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
+  return (
+    <StoreContext.Provider value={{ company, setCompany }}>
+      {children}
+    </StoreContext.Provider>
+  );
 }
 
 export function useStore() {
-  const ctx = useContext(StoreContext)
-  if (!ctx) throw new Error('StoreContext missing')
-  return ctx
+  const ctx = useContext(StoreContext);
+  if (!ctx) throw new Error('useStore deve essere usato dentro StoreProvider');
+  return ctx;
 }
