@@ -18,18 +18,19 @@ export default function Sidebar() {
       <div className="mb-4">
         <label className="form-label small text-muted">Azienda</label>
         <select
-          className="form-select form-select-sm"
-          value={company?.id || ""}
-          onChange={(e) =>
-            setCompany(companies.find((c) => c.id === e.target.value))
-          }
-        >
-          {companies.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+  className="form-select form-select-sm"
+  value={company?.id || ""}
+  onChange={(e) =>
+    setCompany(companies?.find((c) => c.id === e.target.value))
+  }
+>
+  {(companies || []).map((c) => (
+    <option key={c.id} value={c.id}>
+      {c.name}
+    </option>
+  ))}
+</select>
+
       </div>
 
       {/* Navigazione */}
