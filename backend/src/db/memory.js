@@ -1,11 +1,18 @@
-// Ogni azienda ha il proprio spazio dati
-const store = new Map();
+// Un "database" in memoria condiviso tra le rotte
+const memoryDB = {};
 
-function ensureCompany(companyId) {
-  if (!store.has(companyId)) {
-    store.set(companyId, { fatture: [] });
+export function ensureCompany(companyId) {
+  if (!memoryDB[companyId]) {
+    memoryDB[companyId] = {
+      fatture: [],
+      utenze: [],
+      fornitoriBeni: [],
+      fornitoriServizi: [],
+    };
   }
-  return store.get(companyId);
+  return memoryDB[companyId];
 }
 
-module.exports = { ensureCompany };
+export function getAll() {
+  return memoryDB;
+}

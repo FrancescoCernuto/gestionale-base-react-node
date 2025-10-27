@@ -20,11 +20,13 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
 
-// Rotte API
+// Rotte principali
 app.use("/api/fatture", fattureRoutes);
 app.use("/api/utenze", utenzeRoutes);
 app.use("/api/fornitori-beni", fornitoriBeniRoutes);
 app.use("/api/fornitori-servizi", fornitoriServiziRoutes);
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`✅ Backend avviato su http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`✅ Backend avviato su http://localhost:${PORT}`)
+);

@@ -1,28 +1,47 @@
 import express from "express";
 import { v4 as uuid } from "uuid";
+import { ensureCompany } from "../db/memory.js";
 
 const router = express.Router();
-const db = {}; // dati separati per companyId
 
+// GET – tutte le fatture
 router.get("/", (req, res) => {
   const companyId = req.header("x-company-id");
-  if (!db[companyId]) db[companyId] = [];
-  res.json(db[companyId]);
+  const { fatture } = ensureCompany(companyId);
+  res.json(fatture);
 });
 
+// POST – aggiunge una fattura
 router.post("/", (req, res) => {
   const companyId = req.header("x-company-id");
-  const nuova = { id: uuid(), ...req.body };
-  if (!db[companyId]) db[companyId] = [];
-  db[companyId].push(nuova);
+  const { fatture } = ensureCompany(companyId);
+
+  const nuova = {
+    id: uuid(),
+    numero: req.body.numero || "",
+    emissario: req.body.emissario || "",
+    categoria: req.body.categoria || "",
+    data: req.body.data || new Date().toISOString().slice(0, 10),
+    scadenza: req.body.scadenza || "",
+    importo: parseFloat(req.body.importo) || 0,
+    metodoPagamento: req.body.metodoPagamento || "",
+    stato: req.body.stato || "in_sospeso",
+    note: req.body.note || "",
+    allegato: req.body.allegato || null,
+    createdAt: new Date().toISOString(),
+  };
+
+  fatture.push(nuova);
   res.status(201).json(nuova);
 });
 
+// DELETE – elimina
 router.delete("/:id", (req, res) => {
   const companyId = req.header("x-company-id");
-  if (!db[companyId]) db[companyId] = [];
-  db[companyId] = db[companyId].filter((f) => f.id !== req.params.id);
-  res.status(204).end();
+  const { fatture } = ensureCompany(companyId);
+  const filtered = fatture.filter((f) => f.id !== req.params.id);
+  ensureCompany(companyId).fatture = filtered;
+  res.json({ ok: true });
 });
 
 export default router;
