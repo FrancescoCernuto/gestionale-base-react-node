@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useStore } from "../context/StoreContext";
 import { createApiClient } from "../lib/api";
 
 /**
- * Hook CRUD generico per una risorsa (fatture, utenze, ecc.)
+ * Hook CRUD generico e stabile (niente loop di fetch).
  */
 export function useCrud(resource) {
   const { company } = useStore();
@@ -11,16 +11,20 @@ export function useCrud(resource) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const api = company ? createApiClient(company.id) : null;
+  // 🔒 Memo: l'API client cambia solo se cambia l'azienda
+  const api = useMemo(() => {
+    return company ? createApiClient(company.id) : null;
+  }, [company?.id]);
 
   const fetchAll = useCallback(async () => {
     if (!api) return;
     setLoading(true);
+    setError(null);
     try {
-      const list = await api.get(`/${resource}`);
+      const list = await api.get(`/${resource}`, { cache: "no-store" });
       setData(Array.isArray(list) ? list : []);
     } catch (e) {
-      setError(e.message);
+      setError(e.message || "Errore di caricamento");
     } finally {
       setLoading(false);
     }
