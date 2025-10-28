@@ -1,6 +1,6 @@
 /**
  * Sidebar.jsx
- * Navigazione principale con selettore azienda + badge notifiche e ultimo aggiornamento
+ * Navigazione principale + badge alert + orario ultimo aggiornamento
  */
 import { NavLink } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
@@ -8,7 +8,6 @@ import { useStore } from "../context/StoreContext";
 export default function Sidebar() {
   const { companies, company, setCompany, alerts } = useStore();
 
-  // Formatta ora in HH:MM leggibile
   const formatTime = (iso) => {
     if (!iso) return "";
     const d = new Date(iso);
@@ -36,7 +35,6 @@ export default function Sidebar() {
             ))}
           </select>
 
-          {/* piccolo testo grigio: orario ultimo refresh */}
           {alerts.lastUpdate && (
             <div className="text-muted small mt-1">
               Ultimo agg. {formatTime(alerts.lastUpdate)}
