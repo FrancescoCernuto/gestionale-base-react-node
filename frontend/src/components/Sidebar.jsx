@@ -1,55 +1,54 @@
 /**
- * Sidebar – navigazione principale multi-azienda
+ * Sidebar.jsx
+ * Navigazione principale con selettore azienda + badge notifiche
  */
 import { NavLink } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
 
 export default function Sidebar() {
-  const { company, setCompany, companies } = useStore();
+  const { companies, company, setCompany, alerts } = useStore();
 
   return (
-    <div
-      className="bg-white border-end p-3"
-      style={{ width: "240px", minHeight: "100vh" }}
-    >
-      <h5 className="mb-3 text-primary">Gestionale</h5>
+    <div className="bg-white border-end p-3" style={{ width: 240 }}>
+      <h5 className="text-primary mb-3">Gestionale</h5>
 
-      {/* Selettore azienda */}
       <div className="mb-4">
-        <label className="form-label small text-muted">Azienda</label>
+        <label className="form-label small text-muted">Azienda attiva</label>
         <select
-  className="form-select form-select-sm"
-  value={company?.id || ""}
-  onChange={(e) =>
-    setCompany(companies?.find((c) => c.id === e.target.value))
-  }
->
-  {(companies || []).map((c) => (
-    <option key={c.id} value={c.id}>
-      {c.name}
-    </option>
-  ))}
-</select>
-
+          className="form-select form-select-sm"
+          value={company?.id || ""}
+          onChange={(e) =>
+            setCompany(companies.find((c) => c.id === e.target.value))
+          }
+        >
+          {companies.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Navigazione */}
-      <nav className="nav flex-column">
-        <NavLink to="/dashboard" className="nav-link text-dark">
-          📊 Dashboard
+      <nav className="nav flex-column small">
+        <NavLink to="/dashboard" className="nav-link">
+          Dashboard{" "}
+          {(alerts.scadute > 0 || alerts.inScadenza > 0) && (
+            <span className="badge bg-danger ms-1">
+              {alerts.scadute + alerts.inScadenza}
+            </span>
+          )}
         </NavLink>
-        <NavLink to="/fatture" className="nav-link text-dark">
-          💰 Fatture
+        <NavLink to="/fatture" className="nav-link">
+          Fatture
         </NavLink>
-        <NavLink to="/utenze" className="nav-link text-dark">
-          🔌 Utenze
+        <NavLink to="/utenze" className="nav-link">
+          Utenze
         </NavLink>
-        <hr />
-        <NavLink to="/fornitori-beni" className="nav-link text-dark">
-          📦 Fornitori Beni
+        <NavLink to="/fornitori-beni" className="nav-link">
+          Fornitori Beni
         </NavLink>
-        <NavLink to="/fornitori-servizi" className="nav-link text-dark">
-          🧰 Fornitori Servizi
+        <NavLink to="/fornitori-servizi" className="nav-link">
+          Fornitori Servizi
         </NavLink>
       </nav>
     </div>

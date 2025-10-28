@@ -1,5 +1,6 @@
 /**
- * Dashboard intelligente con KPI, grafici e reminder fatture in scadenza
+ * Dashboard.jsx
+ * KPI + grafici + banner di avviso fatture in scadenza o scadute
  */
 import { useMemo } from "react";
 import { useCrud } from "../hooks/useCrud";
@@ -24,7 +25,6 @@ export default function Dashboard() {
 
   const today = new Date();
 
-  // Utility
   const daysDiff = (a, b) => Math.round((b - a) / (1000 * 60 * 60 * 24));
 
   const stats = useMemo(() => {
@@ -47,21 +47,17 @@ export default function Dashboard() {
       if (scad && daysDiff(today, scad) <= 7 && f.stato !== "pagata")
         kpi.inScadenza++;
 
-      // prossime scadenze
       if (scad && f.stato !== "pagata")
         prossime.push({ ...f, giorniMancanti: daysDiff(today, scad) });
 
-      // per mese
       const d = f.data ? new Date(f.data) : null;
       if (d && d.getFullYear() === today.getFullYear()) {
         const m = d.getMonth();
         byMonth[m] = (byMonth[m] || 0) + importo;
       }
 
-      // stato
       byState[f.stato] = (byState[f.stato] || 0) + 1;
 
-      // categoria
       const cat = f.categoria || "Non specificata";
       byCategory[cat] = (byCategory[cat] || 0) + 1;
     }
@@ -70,16 +66,7 @@ export default function Dashboard() {
     return { kpi, byMonth, byState, byCategory, prossime: prossime.slice(0, 5) };
   }, [fatture]);
 
-  const monthLabels = [
-    "Gen", "Feb", "Mar", "Apr", "Mag", "Giu",
-    "Lug", "Ago", "Set", "Ott", "Nov", "Dic",
-  ];
-
-  // Opzioni grafiche con tooltip
-  const tooltipFmt = (ctx) => {
-    const val = ctx.raw;
-    return val.toLocaleString("it-IT", { style: "currency", currency: "EUR" });
-  };
+  const monthLabels = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
 
   const chartMonth = {
     labels: monthLabels,
@@ -90,12 +77,6 @@ export default function Dashboard() {
         backgroundColor: "rgba(54,162,235,0.6)",
       },
     ],
-  };
-  const optMonth = {
-    plugins: {
-      tooltip: { callbacks: { label: tooltipFmt } },
-      legend: { display: false },
-    },
   };
 
   const chartState = {
@@ -114,13 +95,8 @@ export default function Dashboard() {
       {
         data: Object.values(stats.byCategory),
         backgroundColor: [
-          "#0d6efd",
-          "#6f42c1",
-          "#fd7e14",
-          "#20c997",
-          "#6610f2",
-          "#198754",
-          "#dc3545",
+          "#0d6efd", "#6f42c1", "#fd7e14",
+          "#20c997", "#6610f2", "#198754", "#dc3545",
         ],
       },
     ],
@@ -131,6 +107,21 @@ export default function Dashboard() {
       <h4 className="mb-4">
         Dashboard {company ? `– ${company.name}` : ""}
       </h4>
+
+      {/* 🔔 Banner di avviso */}
+      {(stats.kpi.scadute > 0 || stats.kpi.inScadenza > 0) && (
+        <div className="alert alert-warning d-flex justify-content-between align-items-center">
+          <div>
+            ⚠️ Ci sono{" "}
+            <strong>{stats.kpi.scadute}</strong> fatture scadute e{" "}
+            <strong>{stats.kpi.inScadenza}</strong> in scadenza entro 7 giorni.
+          </div>
+          <a href="/fatture" className="btn btn-sm btn-outline-dark">
+            Apri elenco
+          </a>
+        </div>
+      )}
+
       {error && <div className="alert alert-danger">{error}</div>}
 
       {/* KPI */}
@@ -174,7 +165,7 @@ export default function Dashboard() {
         <div className="col-lg-6">
           <div className="card p-3 shadow-sm h-100">
             <h6 className="text-muted mb-3">Andamento mensile</h6>
-            <Bar data={chartMonth} options={optMonth} />
+            <Bar data={chartMonth} />
           </div>
         </div>
         <div className="col-lg-3 col-md-6">
@@ -188,56 +179,6 @@ export default function Dashboard() {
             <h6 className="text-muted mb-3">Categorie</h6>
             <Pie data={chartCategory} />
           </div>
-        </div>
-      </div>
-
-      {/* FATTURE IN SCADENZA */}
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h6 className="text-muted mb-3">Fatture prossime alla scadenza</h6>
-          {stats.prossime.length === 0 && (
-            <div className="text-secondary small">Nessuna fattura in scadenza prossimamente.</div>
-          )}
-          {stats.prossime.length > 0 && (
-            <div className="table-responsive">
-              <table className="table table-sm align-middle">
-                <thead>
-                  <tr>
-                    <th>Numero</th>
-                    <th>Fornitore</th>
-                    <th>Scadenza</th>
-                    <th>Giorni</th>
-                    <th>Importo (€)</th>
-                    <th>Stato</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.prossime.map((f) => (
-                    <tr key={f.id}>
-                      <td>{f.numero}</td>
-                      <td>{f.fornitore || "-"}</td>
-                      <td>{f.scadenza ? new Date(f.scadenza).toLocaleDateString("it-IT") : "-"}</td>
-                      <td>{f.giorniMancanti ?? "-"}</td>
-                      <td>{Number(f.importo).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            f.stato === "pagata"
-                              ? "bg-success"
-                              : f.giorniMancanti < 0
-                              ? "bg-danger"
-                              : "bg-warning text-dark"
-                          }`}
-                        >
-                          {f.stato}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
       </div>
     </div>
