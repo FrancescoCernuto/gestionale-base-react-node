@@ -1,47 +1,49 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useStore } from "../context/StoreContext";
+import { createApiClient } from "../lib/api";
 
-export function useCrud(endpoint) {
+/**
+ * Hook CRUD generico per una risorsa (fatture, utenze, ecc.)
+ */
+export function useCrud(resource) {
   const { company } = useStore();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const baseUrl = "http://localhost:4000/api";
+  const api = company ? createApiClient(company.id) : null;
+
+  const fetchAll = useCallback(async () => {
+    if (!api) return;
+    setLoading(true);
+    try {
+      const list = await api.get(`/${resource}`);
+      setData(Array.isArray(list) ? list : []);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [api, resource]);
 
   useEffect(() => {
-    if (!company) return;
-    fetch(`${baseUrl}/${endpoint}`, {
-      headers: { "x-company-id": company.id },
-    })
-      .then((r) => r.json())
-      .then((json) => setData(Array.isArray(json) ? json : []))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [company, endpoint]);
+    fetchAll();
+  }, [fetchAll]);
 
-  const add = async (item) => {
-    if (!company) return;
-    const res = await fetch(`${baseUrl}/${endpoint}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-company-id": company.id,
-      },
-      body: JSON.stringify(item),
-    });
-    const nuovo = await res.json();
-    setData((d) => [...d, nuovo]);
+  const add = async (payload) => {
+    const created = await api.post(`/${resource}`, payload);
+    setData((prev) => [...prev, created]);
+  };
+
+  const update = async (id, payload) => {
+    const updated = await api.put(`/${resource}/${id}`, payload);
+    setData((prev) => prev.map((x) => (x.id === id ? updated : x)));
   };
 
   const remove = async (id) => {
-    if (!company) return;
-    await fetch(`${baseUrl}/${endpoint}/${id}`, {
-      method: "DELETE",
-      headers: { "x-company-id": company.id },
-    });
-    setData((d) => d.filter((x) => x.id !== id));
+    await api.delete(`/${resource}/${id}`);
+    setData((prev) => prev.filter((x) => x.id !== id));
   };
 
-  return { data, loading, error, add, remove };
+  return { data, loading, error, add, update, remove, refetch: fetchAll };
 }

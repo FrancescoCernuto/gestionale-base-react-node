@@ -4,14 +4,14 @@ import { ensureCompany } from "../db/memory.js";
 
 const router = express.Router();
 
-// GET – tutte le fatture
+/** GET – elenco fatture */
 router.get("/", (req, res) => {
   const companyId = req.header("x-company-id");
   const { fatture } = ensureCompany(companyId);
   res.json(fatture);
 });
 
-// POST – aggiunge una fattura
+/** POST – crea nuova fattura */
 router.post("/", (req, res) => {
   const companyId = req.header("x-company-id");
   const { fatture } = ensureCompany(companyId);
@@ -29,18 +29,35 @@ router.post("/", (req, res) => {
     note: req.body.note || "",
     allegato: req.body.allegato || null,
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
   fatture.push(nuova);
   res.status(201).json(nuova);
 });
 
-// DELETE – elimina
-router.delete("/:id", (req, res) => {
+/** PUT – aggiorna fattura (es. cambio stato) */
+router.put("/:id", (req, res) => {
   const companyId = req.header("x-company-id");
   const { fatture } = ensureCompany(companyId);
-  const filtered = fatture.filter((f) => f.id !== req.params.id);
-  ensureCompany(companyId).fatture = filtered;
+
+  const index = fatture.findIndex(f => f.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: "Fattura non trovata" });
+
+  fatture[index] = {
+    ...fatture[index],
+    ...req.body,
+    updatedAt: new Date().toISOString(),
+  };
+
+  res.json(fatture[index]);
+});
+
+/** DELETE – rimuove fattura */
+router.delete("/:id", (req, res) => {
+  const companyId = req.header("x-company-id");
+  const db = ensureCompany(companyId);
+  db.fatture = db.fatture.filter(f => f.id !== req.params.id);
   res.json({ ok: true });
 });
 
