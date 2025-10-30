@@ -6,6 +6,7 @@ import Utenze from "./pages/Utenze";
 import FornitoriBeni from "./pages/FornitoriBeni";
 import FornitoriServizi from "./pages/FornitoriServizi";
 import { StoreProvider } from "./context/StoreContext";
+import CompanyProfile from "./pages/CompanyProfile.jsx";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="/utenze" element={<Utenze />} />
             <Route path="/fornitori-beni" element={<FornitoriBeni />} />
             <Route path="/fornitori-servizi" element={<FornitoriServizi />} />
+            <Route path="/profilo" element={<CompanyProfile />} />
           </Routes>
         </main>
       </div>

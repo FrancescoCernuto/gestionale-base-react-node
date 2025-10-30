@@ -63,6 +63,8 @@ export default function Sidebar() {
           <NavLink to="/fornitori-servizi" className="nav-link">
             Fornitori Servizi
           </NavLink>
+          <NavLink to="/profilo" className="nav-link">
+          Profilo Azienda</NavLink>
         </nav>
       </div>
 
