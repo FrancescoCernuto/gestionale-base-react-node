@@ -1,18 +1,66 @@
-// Un "database" in memoria condiviso tra le rotte
-const memoryDB = {};
+// db/memory.js
+// In-memory store per ogni azienda (mock finché non usiamo SQLite)
 
-export function ensureCompany(companyId) {
-  if (!memoryDB[companyId]) {
-    memoryDB[companyId] = {
+const _db = new Map();
+
+export function ensureCompany(companyId = "default") {
+  if (!_db.has(companyId)) {
+    _db.set(companyId, {
       fatture: [],
       utenze: [],
       fornitoriBeni: [],
       fornitoriServizi: [],
-    };
-  }
-  return memoryDB[companyId];
-}
+      profile: {
+        // Identità
+        denominazione: "",
+        formaGiuridica: "",
+        partitaIVA: "",
+        codiceFiscale: "",
+        codiceREA: "",
+        numeroRI: "",
+        ateco: "",
+        regimeFiscale: "",
+        dataCostituzione: "",
 
-export function getAll() {
-  return memoryDB;
+        // Sedi
+        sedeLegale: {
+          indirizzo: "",
+          cap: "",
+          comune: "",
+          provincia: "",
+          nazione: "IT",
+        },
+        sedeOperativa: {
+          indirizzo: "",
+          cap: "",
+          comune: "",
+          provincia: "",
+          nazione: "IT",
+        },
+
+        // Contatti & Fatturazione Elettronica
+        pec: "",
+        codiceDestinatario: "",
+        email: "",
+        telefono: "",
+        sito: "",
+
+        // Banca
+        iban: "",
+        banca: "",
+
+        // Rappresentante legale
+        rappresentante: {
+          nome: "",
+          cognome: "",
+          codiceFiscale: "",
+          ruolo: "Legale Rappresentante",
+        },
+
+        note: "",
+        updatedAt: null,
+      },
+    });
+  }
+  return _db.get(companyId);
 }
