@@ -1,6 +1,6 @@
 /**
  * CompanyProfile.jsx
- * Scheda anagrafica aziendale (multi-azienda, dati italiani)
+ * Scheda anagrafica azienda (multi-azienda, vista + modifica)
  */
 import { useEffect, useState } from "react";
 import { useCompanyProfile } from "../hooks/useCompanyProfile";
@@ -11,6 +11,7 @@ export default function CompanyProfile() {
   const { company } = useStore();
   const { profile, loading, error, save } = useCompanyProfile();
   const [form, setForm] = useState(null);
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     if (profile) setForm(profile);
@@ -30,202 +31,128 @@ export default function CompanyProfile() {
   const onSubmit = async (e) => {
     e.preventDefault();
     const saved = await save(form);
-    toast.success("Profilo azienda aggiornato");
     setForm(saved);
+    setEditMode(false);
+    toast.success("Profilo aggiornato");
   };
 
   if (loading || !form) return <div className="container py-3">Caricamento…</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
 
+  const Field = ({ label, path, placeholder = "", type = "text" }) => (
+    <div className="col-md-3 mb-2">
+      <label className="form-label small">{label}</label>
+      {editMode ? (
+        <input
+          type={type}
+          className="form-control form-control-sm"
+          value={path.split(".").reduce((a, b) => (a ? a[b] : ""), form) || ""}
+          onChange={(e) => update(path, e.target.value)}
+          placeholder={placeholder}
+        />
+      ) : (
+        <div className="border rounded p-1 bg-white text-truncate small" style={{ minHeight: "31px" }}>
+          {path.split(".").reduce((a, b) => (a ? a[b] : ""), form) || <span className="text-muted">—</span>}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="container py-3">
-      <h4 className="mb-3">Profilo azienda {company ? `– ${company.name}` : ""}</h4>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="mb-0">Profilo azienda {company ? `– ${company.name}` : ""}</h4>
+        {!editMode ? (
+          <button className="btn btn-outline-primary btn-sm" onClick={() => setEditMode(true)}>
+            ✏️ Modifica dati
+          </button>
+        ) : (
+          <div className="d-flex gap-2">
+            <button className="btn btn-success btn-sm" onClick={onSubmit}>💾 Salva</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => setEditMode(false)}>Annulla</button>
+          </div>
+        )}
+      </div>
 
-      <form className="row g-3" onSubmit={onSubmit}>
-        {/* Identità */}
-        <div className="col-12"><h6 className="text-muted">Identità</h6></div>
+      {/* IDENTITÀ */}
+      <h6 className="text-muted mt-3">Identità</h6>
+      <div className="row g-2">
+        <Field label="Denominazione" path="denominazione" />
+        <Field label="Forma giuridica" path="formaGiuridica" />
+        <Field label="Partita IVA" path="partitaIVA" />
+        <Field label="Codice Fiscale" path="codiceFiscale" />
+        <Field label="Codice REA" path="codiceREA" />
+        <Field label="Numero Registro Imprese" path="numeroRI" />
+        <Field label="ATECO" path="ateco" />
+        <Field label="Regime fiscale" path="regimeFiscale" />
+        <Field label="Data costituzione" path="dataCostituzione" type="date" />
+      </div>
 
-        <div className="col-md-4">
-          <label className="form-label small">Denominazione</label>
-          <input
-            className="form-control form-control-sm"
-            value={form.denominazione || ""}
-            onChange={(e) => update("denominazione", e.target.value)}
-          />
-        </div>
+      {/* Sede legale */}
+      <h6 className="text-muted mt-3">Sede Legale</h6>
+      <div className="row g-2">
+        <Field label="Indirizzo" path="sedeLegale.indirizzo" />
+        <Field label="CAP" path="sedeLegale.cap" />
+        <Field label="Comune" path="sedeLegale.comune" />
+        <Field label="Provincia" path="sedeLegale.provincia" />
+      </div>
 
-        <div className="col-md-2">
-          <label className="form-label small">Forma Giuridica</label>
-          <input
-            className="form-control form-control-sm"
-            value={form.formaGiuridica || ""}
-            onChange={(e) => update("formaGiuridica", e.target.value)}
-          />
-        </div>
+      {/* Sede operativa */}
+      <h6 className="text-muted mt-3">Sede Operativa</h6>
+      <div className="row g-2">
+        <Field label="Indirizzo" path="sedeOperativa.indirizzo" />
+        <Field label="CAP" path="sedeOperativa.cap" />
+        <Field label="Comune" path="sedeOperativa.comune" />
+        <Field label="Provincia" path="sedeOperativa.provincia" />
+      </div>
 
-        <div className="col-md-2">
-          <label className="form-label small">Partita IVA</label>
-          <input
-            className="form-control form-control-sm"
-            value={form.partitaIVA || ""}
-            onChange={(e) => update("partitaIVA", e.target.value)}
-          />
-        </div>
+      {/* Contatti */}
+      <h6 className="text-muted mt-3">Contatti & Fatturazione Elettronica</h6>
+      <div className="row g-2">
+        <Field label="PEC" path="pec" />
+        <Field label="Codice Destinatario SDI" path="codiceDestinatario" />
+        <Field label="Email" path="email" />
+        <Field label="Telefono" path="telefono" />
+        <Field label="Sito Web" path="sito" />
+      </div>
 
-        <div className="col-md-2">
-          <label className="form-label small">Codice Fiscale</label>
-          <input
-            className="form-control form-control-sm"
-            value={form.codiceFiscale || ""}
-            onChange={(e) => update("codiceFiscale", e.target.value)}
-          />
-        </div>
+      {/* Banca */}
+      <h6 className="text-muted mt-3">Banca</h6>
+      <div className="row g-2">
+        <Field label="IBAN" path="iban" />
+        <Field label="Banca" path="banca" />
+      </div>
 
-        <div className="col-md-2">
-          <label className="form-label small">ATECO</label>
-          <input
-            className="form-control form-control-sm"
-            value={form.ateco || ""}
-            onChange={(e) => update("ateco", e.target.value)}
-          />
-        </div>
+      {/* Rappresentante */}
+      <h6 className="text-muted mt-3">Rappresentante legale</h6>
+      <div className="row g-2">
+        <Field label="Nome" path="rappresentante.nome" />
+        <Field label="Cognome" path="rappresentante.cognome" />
+        <Field label="Codice Fiscale" path="rappresentante.codiceFiscale" />
+        <Field label="Ruolo" path="rappresentante.ruolo" />
+      </div>
 
-        {/* Sede legale */}
-        <div className="col-12 mt-3"><h6 className="text-muted">Sede Legale</h6></div>
-        <div className="col-md-4">
-          <input
-            className="form-control form-control-sm"
-            placeholder="Indirizzo"
-            value={form.sedeLegale?.indirizzo || ""}
-            onChange={(e) => update("sedeLegale.indirizzo", e.target.value)}
-          />
+      {/* Note */}
+      <h6 className="text-muted mt-3">Note</h6>
+      {editMode ? (
+        <textarea
+          className="form-control form-control-sm"
+          rows="3"
+          value={form.note || ""}
+          onChange={(e) => update("note", e.target.value)}
+        />
+      ) : (
+        <div className="border rounded p-2 bg-white small" style={{ minHeight: "40px" }}>
+          {form.note || <span className="text-muted">—</span>}
         </div>
-        <div className="col-md-2">
-          <input
-            className="form-control form-control-sm"
-            placeholder="CAP"
-            value={form.sedeLegale?.cap || ""}
-            onChange={(e) => update("sedeLegale.cap", e.target.value)}
-          />
-        </div>
-        <div className="col-md-3">
-          <input
-            className="form-control form-control-sm"
-            placeholder="Comune"
-            value={form.sedeLegale?.comune || ""}
-            onChange={(e) => update("sedeLegale.comune", e.target.value)}
-          />
-        </div>
-        <div className="col-md-2">
-          <input
-            className="form-control form-control-sm"
-            placeholder="Provincia"
-            value={form.sedeLegale?.provincia || ""}
-            onChange={(e) => update("sedeLegale.provincia", e.target.value)}
-          />
-        </div>
+      )}
 
-        {/* Contatti */}
-        <div className="col-12 mt-3"><h6 className="text-muted">Contatti</h6></div>
-        <div className="col-md-3">
-          <input
-            className="form-control form-control-sm"
-            placeholder="PEC"
-            value={form.pec || ""}
-            onChange={(e) => update("pec", e.target.value)}
-          />
+      {/* Ultimo aggiornamento */}
+      {form.updatedAt && (
+        <div className="text-end text-muted small mt-2">
+          Ultimo aggiornamento: {new Date(form.updatedAt).toLocaleString("it-IT")}
         </div>
-        <div className="col-md-3">
-          <input
-            className="form-control form-control-sm"
-            placeholder="Email"
-            value={form.email || ""}
-            onChange={(e) => update("email", e.target.value)}
-          />
-        </div>
-        <div className="col-md-3">
-          <input
-            className="form-control form-control-sm"
-            placeholder="Telefono"
-            value={form.telefono || ""}
-            onChange={(e) => update("telefono", e.target.value)}
-          />
-        </div>
-        <div className="col-md-3">
-          <input
-            className="form-control form-control-sm"
-            placeholder="Sito"
-            value={form.sito || ""}
-            onChange={(e) => update("sito", e.target.value)}
-          />
-        </div>
-
-        {/* Banca */}
-        <div className="col-12 mt-3"><h6 className="text-muted">Banca</h6></div>
-        <div className="col-md-4">
-          <input
-            className="form-control form-control-sm"
-            placeholder="IBAN"
-            value={form.iban || ""}
-            onChange={(e) => update("iban", e.target.value)}
-          />
-        </div>
-        <div className="col-md-4">
-          <input
-            className="form-control form-control-sm"
-            placeholder="Nome Banca"
-            value={form.banca || ""}
-            onChange={(e) => update("banca", e.target.value)}
-          />
-        </div>
-
-        {/* Rappresentante */}
-        <div className="col-12 mt-3"><h6 className="text-muted">Rappresentante Legale</h6></div>
-        <div className="col-md-3">
-          <input
-            className="form-control form-control-sm"
-            placeholder="Nome"
-            value={form.rappresentante?.nome || ""}
-            onChange={(e) => update("rappresentante.nome", e.target.value)}
-          />
-        </div>
-        <div className="col-md-3">
-          <input
-            className="form-control form-control-sm"
-            placeholder="Cognome"
-            value={form.rappresentante?.cognome || ""}
-            onChange={(e) => update("rappresentante.cognome", e.target.value)}
-          />
-        </div>
-        <div className="col-md-3">
-          <input
-            className="form-control form-control-sm"
-            placeholder="Codice Fiscale"
-            value={form.rappresentante?.codiceFiscale || ""}
-            onChange={(e) => update("rappresentante.codiceFiscale", e.target.value)}
-          />
-        </div>
-
-        {/* Note e pulsante salva */}
-        <div className="col-12 mt-3">
-          <textarea
-            className="form-control form-control-sm"
-            rows="2"
-            placeholder="Note"
-            value={form.note || ""}
-            onChange={(e) => update("note", e.target.value)}
-          />
-        </div>
-
-        <div className="col-12 d-flex align-items-center gap-3">
-          <button type="submit" className="btn btn-primary btn-sm">Salva</button>
-          {form.updatedAt && (
-            <small className="text-muted">
-              Ultimo aggiornamento: {new Date(form.updatedAt).toLocaleString("it-IT")}
-            </small>
-          )}
-        </div>
-      </form>
+      )}
     </div>
   );
 }
