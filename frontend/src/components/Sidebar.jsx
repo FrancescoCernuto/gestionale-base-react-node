@@ -1,6 +1,6 @@
 /**
  * Sidebar.jsx
- * Navigazione principale + badge alert + orario ultimo aggiornamento
+ * Navigazione principale con selettore azienda + link al profilo aziendale
  */
 import { NavLink } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
@@ -15,11 +15,16 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="bg-white border-end p-3 d-flex flex-column" style={{ width: 240, minHeight: "100vh" }}>
+    <div
+      className="bg-white border-end p-3 d-flex flex-column"
+      style={{ width: 240, minHeight: "100vh" }}
+    >
+      {/* intestazione */}
       <div>
         <h5 className="text-primary mb-3">Gestionale</h5>
 
-        <div className="mb-3">
+        {/* Selettore azienda */}
+        <div className="mb-2">
           <label className="form-label small text-muted">Azienda attiva</label>
           <select
             className="form-select form-select-sm"
@@ -42,6 +47,24 @@ export default function Sidebar() {
           )}
         </div>
 
+        {/* Link al profilo aziendale */}
+        <div
+          className="border-top pt-2 mt-2 mb-3"
+          style={{ borderColor: "#dee2e6" }}
+        >
+          <NavLink
+            to="/profilo"
+            className={({ isActive }) =>
+              `nav-link px-0 small fw-semibold ${
+                isActive ? "text-primary" : "text-dark"
+              }`
+            }
+          >
+            🏢 Profilo Azienda
+          </NavLink>
+        </div>
+
+        {/* Navigazione sezioni operative */}
         <nav className="nav flex-column small">
           <NavLink to="/dashboard" className="nav-link">
             Dashboard{" "}
@@ -63,11 +86,10 @@ export default function Sidebar() {
           <NavLink to="/fornitori-servizi" className="nav-link">
             Fornitori Servizi
           </NavLink>
-          <NavLink to="/profilo" className="nav-link">
-          Profilo Azienda</NavLink>
         </nav>
       </div>
 
+      {/* footer */}
       <div className="mt-auto text-center small text-muted border-top pt-3">
         © {new Date().getFullYear()} Gestionale Multi-Azienda
       </div>
